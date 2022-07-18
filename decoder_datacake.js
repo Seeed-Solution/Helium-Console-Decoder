@@ -76,9 +76,11 @@ function Decoder (bytes, port) {
                 case 7:
                     // battery power && interval
                     decoded.messages.push({
+                        measurementId: 9990100,
                         type: "upload_battery",
                         battery: realDataValue.power
                     }, {
+                        measurementId: 9990200,
                         type: "upload_interval",
                         interval: parseInt(realDataValue.interval) * 60
                     });
@@ -465,6 +467,29 @@ function Decoder (bytes, port) {
                 break;
         }
     }
+
+    // metadata if present
+    if (
+        normalizedPayload.data_rate &&
+        normalizedPayload.gateways &&
+        normalizedPayload.gateways[0]
+    ) {
+        datacakeFields.push({
+            field: 'SNR',
+            value: normalizedPayload.gateways[0].snr,
+        });
+        datacakeFields.push({
+            field: 'RSSI',
+            value: normalizedPayload.gateways[0].rssi,
+        });
+        datacakeFields.push({
+            field: 'SF',
+            value: normalizedPayload.data_rate,
+        });
+    } else {
+        console.log('No Gateway Metadata found - Skipping');
+    }
+
     return datacakeFields
 }
 
